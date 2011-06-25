@@ -189,7 +189,33 @@ class cmb_Meta_Box {
 					echo '<textarea name="', $field['id'], '" id="', $field['id'], '" class="theEditor" cols="60" rows="4" style="width:97%">', $meta ? $meta : $field['std'], '</textarea>';
 					echo '<p class="cmb_metabox_description">', $field['desc'], '</p>';	
 					break;
-*/
+*/	
+				case 'taxonomy-select':
+					echo '<select name="', $field['id'], '" id="', $field['id'], '">';
+					$names= wp_get_object_terms($post->ID, $field['taxonomy'] );
+					$terms = get_terms( $field['taxonomy'], 'hide_empty=0' );
+					foreach ($terms as $term ) {
+					if (!is_wp_error($names) && !empty($names) && !strcmp($term->slug, $names[0]->slug)) 
+					echo '<option value="' . $term->slug . '" selected>' . $term->name . '</option>';
+					else
+					echo '<option value="' . $term->slug . '  ' , $meta == $term->slug ? $meta : ' ' ,'  ">' . $term->name . '</option>';
+					}
+					echo '<p class="cmb_metabox_description">', $field['desc'], '</p>';
+					break;
+				
+				case 'taxonomy-radio':
+					$names= wp_get_object_terms($post->ID, $field['taxonomy'] );
+					$terms = get_terms( $field['taxonomy'], 'hide_empty=0' );
+					foreach ($terms as $term ) {
+					if (!is_wp_error($names) && !empty($names) && !strcmp($term->slug, $names[0]->slug)) 
+					echo '<p><input type="radio" name="', $field['id'], '" value="'. $term->slug . '" checked>' . $term->name . '</p>';
+					else
+					echo '<p><input type="radio" name="', $field['id'], '" value="' . $term->slug . '  ' , $meta == $term->slug ? $meta : ' ' ,'  ">' . $term->name .'</p>';
+					
+					}
+					echo '<p class="cmb_metabox_description">', $field['desc'], '</p>';
+					break;
+					
 				case 'file_list':
 					echo '<input id="upload_file" type="text" size="36" name="', $field['id'], '" value="" />';
 					echo '<input class="upload_button button" type="button" value="Upload File" />';
@@ -269,7 +295,17 @@ class cmb_Meta_Box {
 			if ( $field['type'] == 'wysiwyg' ) {
 				$new = wpautop($new);
 			}
-
+			
+			if ( $field['type'] == 'taxonomy-select' )  {
+					
+					$new = wp_set_object_terms( $post_id, $new, $field['taxonomy'] );
+				
+			}
+			if ( $field['type'] == 'taxonomy-radio' )  {
+					
+					$new = wp_set_object_terms( $post_id, $new, $field['taxonomy'] );
+				
+			}
 			if ( ($field['type'] == 'textarea') || ($field['type'] == 'textarea_small') ) {
 				$new = htmlspecialchars($new);
 			}
